@@ -1,4 +1,4 @@
-package adsbdb
+package adsbdb_test
 
 import (
 	"context"
@@ -7,19 +7,21 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+
+	adsbdb "github.com/nint8835/go-adsbdb"
 )
 
 func TestAircraft(t *testing.T) {
-	client, err := NewClient(
-		WithBaseURL("https://example.test/v0/"),
-		WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
+	client, err := adsbdb.NewClient(
+		adsbdb.WithBaseURL("https://example.test/v0/"),
+		adsbdb.WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
 			if r.URL.Path != "/v0/aircraft/C0816E" {
 				t.Fatalf("path = %q", r.URL.Path)
 			}
 			if got := r.Header.Get("Accept"); got != "application/json" {
 				t.Fatalf("Accept = %q", got)
 			}
-			if got := r.Header.Get("User-Agent"); got != defaultUserAgent {
+			if got := r.Header.Get("User-Agent"); got != "go-adsbdb (github.com/nint8835/go-adsbdb)" {
 				t.Fatalf("User-Agent = %q", got)
 			}
 
@@ -59,9 +61,9 @@ func TestAircraft(t *testing.T) {
 }
 
 func TestAircraftWithCallsign(t *testing.T) {
-	client, err := NewClient(
-		WithBaseURL("https://example.test/v0/"),
-		WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
+	client, err := adsbdb.NewClient(
+		adsbdb.WithBaseURL("https://example.test/v0/"),
+		adsbdb.WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
 			if r.URL.Path != "/v0/aircraft/C0816E" {
 				t.Fatalf("path = %q", r.URL.Path)
 			}
@@ -154,9 +156,9 @@ func TestAircraftWithCallsign(t *testing.T) {
 }
 
 func TestNotFound(t *testing.T) {
-	client, err := NewClient(
-		WithBaseURL("https://example.test/v0/"),
-		WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
+	client, err := adsbdb.NewClient(
+		adsbdb.WithBaseURL("https://example.test/v0/"),
+		adsbdb.WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
 			return jsonResponse(http.StatusNotFound, `{"response":"unknown aircraft"}`)
 		})),
 	)
@@ -165,11 +167,11 @@ func TestNotFound(t *testing.T) {
 	}
 
 	_, err = client.Aircraft(context.Background(), "NOPE")
-	if !errors.Is(err, ErrNotFound) {
+	if !errors.Is(err, adsbdb.ErrNotFound) {
 		t.Fatalf("err = %v, want ErrNotFound", err)
 	}
 
-	var apiErr *APIError
+	var apiErr *adsbdb.APIError
 	if !errors.As(err, &apiErr) {
 		t.Fatalf("err = %T, want *APIError", err)
 	}
@@ -179,9 +181,9 @@ func TestNotFound(t *testing.T) {
 }
 
 func TestAirline(t *testing.T) {
-	client, err := NewClient(
-		WithBaseURL("https://example.test/v0/"),
-		WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
+	client, err := adsbdb.NewClient(
+		adsbdb.WithBaseURL("https://example.test/v0/"),
+		adsbdb.WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
 			if r.URL.Path != "/v0/airline/CJT" {
 				t.Fatalf("path = %q", r.URL.Path)
 			}
@@ -213,9 +215,9 @@ func TestAirline(t *testing.T) {
 }
 
 func TestModeSToNNumber(t *testing.T) {
-	client, err := NewClient(
-		WithBaseURL("https://example.test/v0/"),
-		WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
+	client, err := adsbdb.NewClient(
+		adsbdb.WithBaseURL("https://example.test/v0/"),
+		adsbdb.WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
 			if r.URL.Path != "/v0/mode-s/A00001" {
 				t.Fatalf("path = %q", r.URL.Path)
 			}

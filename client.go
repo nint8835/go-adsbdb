@@ -110,7 +110,11 @@ func (c *Client) RandomAircraft(ctx context.Context) (Aircraft, error) {
 
 // AircraftWithCallsign returns aircraft data and, when the callsign is known,
 // route data for the supplied callsign.
-func (c *Client) AircraftWithCallsign(ctx context.Context, identifier, callsign string) (AircraftAndFlightRoute, error) {
+func (c *Client) AircraftWithCallsign(
+	ctx context.Context,
+	identifier string,
+	callsign string,
+) (AircraftAndFlightRoute, error) {
 	var out AircraftAndFlightRoute
 	query := url.Values{"callsign": []string{callsign}}
 	if err := c.get(ctx, path("aircraft", identifier), query, &out); err != nil {
@@ -194,7 +198,9 @@ func (c *Client) get(ctx context.Context, endpoint string, query url.Values, v a
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		body, err := io.ReadAll(resp.Body)
