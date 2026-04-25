@@ -1,6 +1,6 @@
 # go-adsbdb
 
-Go client library for [ADSBDB](https://www.adsbdb.com/), a public aircraft,
+Go client library for [adsbdb](https://www.adsbdb.com/), a public aircraft,
 airline, and flight route API.
 
 ## Installation
@@ -29,32 +29,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	aircraft, err := client.Aircraft(context.Background(), "4CA645")
+	aircraft, err := client.AircraftWithCallsign(context.Background(), "C0816E", "CJT620")
 	if err != nil {
 		if errors.Is(err, adsbdb.ErrNotFound) {
-			log.Fatal("aircraft not found")
+			log.Fatal("flight not found")
 		}
 		log.Fatal(err)
 	}
+	if aircraft.FlightRoute == nil {
+		log.Fatal("route not found")
+	}
 
-	fmt.Printf("%s %s\n", aircraft.Registration, aircraft.RegisteredOwner)
+	fmt.Printf("%s %s\n", aircraft.Aircraft.Registration, aircraft.FlightRoute.Destination.IATACode)
 }
 ```
-
-## API
-
-The client supports the public read-only ADSBDB endpoints:
-
-- `Aircraft(ctx, identifier)` and `RandomAircraft(ctx)`
-- `AircraftWithCallsign(ctx, identifier, callsign)`
-- `Callsign(ctx, callsign)` and `RandomCallsign(ctx)`
-- `Airline(ctx, code)` and `RandomAirline(ctx)`
-- `Stats(ctx)`
-- `ModeSToNNumber(ctx, modeS)`
-- `NNumberToModeS(ctx, nNumber)`
-
-`identifier` can be a Mode-S hex code or an aircraft registration. Airline
-codes can be ICAO or IATA codes.
 
 ## Configuration
 
@@ -69,7 +57,7 @@ Use `WithHTTPClient` to configure timeouts, transports, or test clients.
 
 ## Errors
 
-Non-2xx API responses return `*adsbdb.APIError`. ADSBDB 404 responses also
+Non-2xx API responses return `*adsbdb.APIError`. adsbdb 404 responses also
 match `adsbdb.ErrNotFound`:
 
 ```go

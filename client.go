@@ -16,7 +16,7 @@ const (
 	defaultUserAgent = "go-adsbdb (github.com/nint8835/go-adsbdb)"
 )
 
-// Client is an ADSBDB API client.
+// Client is an adsbdb API client.
 type Client struct {
 	baseURL    *url.URL
 	httpClient *http.Client
@@ -26,7 +26,7 @@ type Client struct {
 // Option configures a Client.
 type Option func(*Client) error
 
-// NewClient creates a Client for the public ADSBDB API.
+// NewClient creates a Client for the public adsbdb API.
 func NewClient(opts ...Option) (*Client, error) {
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
@@ -59,9 +59,9 @@ func WithHTTPClient(httpClient *http.Client) Option {
 	}
 }
 
-// WithBaseURL configures the ADSBDB API base URL.
+// WithBaseURL configures the adsbdb API base URL.
 //
-// This is mainly useful for tests or self-hosted ADSBDB deployments.
+// This is mainly useful for tests or self-hosted adsbdb deployments.
 func WithBaseURL(baseURL string) Option {
 	return func(c *Client) error {
 		parsed, err := url.Parse(baseURL)
@@ -215,7 +215,7 @@ func (c *Client) get(ctx context.Context, endpoint string, query url.Values, v a
 
 func decodeResponse(r io.Reader, v any) error {
 	var envelope struct {
-		// ADSBDB wraps every endpoint in "response", but that field can be an
+		// adsbdb wraps every endpoint in "response", but that field can be an
 		// object, array, or string depending on the route.
 		Response json.RawMessage `json:"response"`
 	}

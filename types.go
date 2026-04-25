@@ -8,7 +8,7 @@ type callsignResponse struct {
 	FlightRoute *FlightRoute `json:"flightroute"`
 }
 
-// Aircraft is an aircraft record returned by ADSBDB.
+// Aircraft is an aircraft record returned by adsbdb.
 type Aircraft struct {
 	Type                            string  `json:"type"`
 	ICAOType                        string  `json:"icao_type"`
@@ -41,7 +41,7 @@ type FlightRoute struct {
 	Destination  Airport  `json:"destination"`
 }
 
-// Airline is an airline record returned by ADSBDB.
+// Airline is an airline record returned by adsbdb.
 type Airline struct {
 	Name       string  `json:"name"`
 	ICAO       string  `json:"icao"`

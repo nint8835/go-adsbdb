@@ -8,10 +8,10 @@ import (
 	"strings"
 )
 
-// ErrNotFound is matched by errors.Is for 404 responses from the ADSBDB API.
+// ErrNotFound is matched by errors.Is for 404 responses from the adsbdb API.
 var ErrNotFound = errors.New("not found")
 
-// APIError describes a non-2xx response from the ADSBDB API.
+// APIError describes a non-2xx response from the adsbdb API.
 type APIError struct {
 	StatusCode int
 	Message    string
