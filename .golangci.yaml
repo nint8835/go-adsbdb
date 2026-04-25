@@ -21,4 +21,4 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/nint8835/go-asdbdb
+        - github.com/nint8835/go-adsbdb
