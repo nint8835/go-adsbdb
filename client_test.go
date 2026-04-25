@@ -13,7 +13,7 @@ func TestAircraft(t *testing.T) {
 	client, err := NewClient(
 		WithBaseURL("https://example.test/v0/"),
 		WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
-			if r.URL.Path != "/v0/aircraft/4CA645" {
+			if r.URL.Path != "/v0/aircraft/C0816E" {
 				t.Fatalf("path = %q", r.URL.Path)
 			}
 			if got := r.Header.Get("Accept"); got != "application/json" {
@@ -26,15 +26,15 @@ func TestAircraft(t *testing.T) {
 			return jsonResponse(http.StatusOK, `{
 				"response": {
 					"aircraft": {
-						"type": "737NG 8AS/W",
-						"icao_type": "B738",
+						"type": "767-323ERSF",
+						"icao_type": "B763",
 						"manufacturer": "Boeing",
-						"mode_s": "4CA645",
-						"registration": "EI-DYC",
-						"registered_owner_country_iso_name": "IE",
-						"registered_owner_country_name": "Ireland",
-						"registered_owner_operator_flag_code": "RYR",
-						"registered_owner": "Ryanair",
+						"mode_s": "C0816E",
+						"registration": "C-GXAJ",
+						"registered_owner_country_iso_name": "CA",
+						"registered_owner_country_name": "Canada",
+						"registered_owner_operator_flag_code": "CJT",
+						"registered_owner": "Cargojet Airways Ltd",
 						"url_photo": null,
 						"url_photo_thumbnail": null
 					}
@@ -46,14 +46,14 @@ func TestAircraft(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	aircraft, err := client.Aircraft(context.Background(), "4CA645")
+	aircraft, err := client.Aircraft(context.Background(), "C0816E")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if aircraft.Registration != "EI-DYC" {
+	if aircraft.Registration != "C-GXAJ" {
 		t.Fatalf("Registration = %q", aircraft.Registration)
 	}
-	if aircraft.RegisteredOwnerOperatorFlagCode == nil || *aircraft.RegisteredOwnerOperatorFlagCode != "RYR" {
+	if aircraft.RegisteredOwnerOperatorFlagCode == nil || *aircraft.RegisteredOwnerOperatorFlagCode != "CJT" {
 		t.Fatalf("RegisteredOwnerOperatorFlagCode = %v", aircraft.RegisteredOwnerOperatorFlagCode)
 	}
 }
@@ -62,61 +62,72 @@ func TestAircraftWithCallsign(t *testing.T) {
 	client, err := NewClient(
 		WithBaseURL("https://example.test/v0/"),
 		WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
-			if r.URL.Path != "/v0/aircraft/4CA645" {
+			if r.URL.Path != "/v0/aircraft/C0816E" {
 				t.Fatalf("path = %q", r.URL.Path)
 			}
-			if got := r.URL.Query().Get("callsign"); got != "RYR9KH" {
+			if got := r.URL.Query().Get("callsign"); got != "CJT620" {
 				t.Fatalf("callsign = %q", got)
 			}
 
 			return jsonResponse(http.StatusOK, `{
 				"response": {
 					"aircraft": {
-						"type": "737NG 8AS/W",
-						"icao_type": "B738",
+						"type": "767-323ERSF",
+						"icao_type": "B763",
 						"manufacturer": "Boeing",
-						"mode_s": "4CA645",
-						"registration": "EI-DYC",
-						"registered_owner_country_iso_name": "IE",
-						"registered_owner_country_name": "Ireland",
-						"registered_owner_operator_flag_code": "RYR",
-						"registered_owner": "Ryanair",
+						"mode_s": "C0816E",
+						"registration": "C-GXAJ",
+						"registered_owner_country_iso_name": "CA",
+						"registered_owner_country_name": "Canada",
+						"registered_owner_operator_flag_code": "CJT",
+						"registered_owner": "Cargojet Airways Ltd",
 						"url_photo": null,
 						"url_photo_thumbnail": null
 					},
 					"flightroute": {
-						"callsign": "RYR9KH",
-						"callsign_icao": "RYR9KH",
-						"callsign_iata": null,
+						"callsign": "CJT620",
+						"callsign_icao": "CJT620",
+						"callsign_iata": "W8620",
 						"airline": {
-							"name": "Ryanair",
-							"icao": "RYR",
-							"iata": "FR",
-							"country": "Ireland",
-							"country_iso": "IE",
-							"callsign": "RYANAIR"
+							"name": "Cargojet Airways",
+							"icao": "CJT",
+							"iata": "W8",
+							"country": "Canada",
+							"country_iso": "CA",
+							"callsign": "CARGOJET"
 						},
 						"origin": {
-							"country_iso_name": "GB",
-							"country_name": "United Kingdom",
-							"elevation": 622,
-							"iata_code": "STN",
-							"icao_code": "EGSS",
-							"latitude": 51.8849983215,
-							"longitude": 0.2349999994,
-							"municipality": "London",
-							"name": "London Stansted Airport"
+							"country_iso_name": "CA",
+							"country_name": "Canada",
+							"elevation": 780,
+							"iata_code": "YHM",
+							"icao_code": "CYHM",
+							"latitude": 43.1735992432,
+							"longitude": -79.9349975586,
+							"municipality": "Hamilton",
+							"name": "John C. Munro Hamilton International Airport"
+						},
+						"midpoint": {
+							"country_iso_name": "CA",
+							"country_name": "Canada",
+							"elevation": 232,
+							"iata_code": "YQM",
+							"icao_code": "CYQM",
+							"latitude": 46.1122016907,
+							"longitude": -64.6785964966,
+							"municipality": "Moncton",
+							"name": "Greater Moncton Romeo LeBlanc International Airport"
 						},
 						"destination": {
-							"country_iso_name": "IE",
-							"country_name": "Ireland",
-							"elevation": 242,
-							"iata_code": "DUB",
-							"icao_code": "EIDW",
-							"latitude": 53.421299,
-							"longitude": -6.27007,
-							"municipality": "Dublin",
-							"name": "Dublin Airport"
+							"country_iso_name": "CA",
+							"country_name": "Canada",
+							"elevation": 461,
+							"iata_code": "YYT",
+							"icao_code": "CYYT",
+							"latitude": 47.618598938,
+							"longitude": -52.7518997192,
+							"municipality": "St. John's",
+							"name": "St. John's International Airport"
 						}
 					}
 				}
@@ -127,15 +138,18 @@ func TestAircraftWithCallsign(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result, err := client.AircraftWithCallsign(context.Background(), "4CA645", "RYR9KH")
+	result, err := client.AircraftWithCallsign(context.Background(), "C0816E", "CJT620")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if result.Aircraft.ModeS == "" || result.FlightRoute == nil {
 		t.Fatalf("expected aircraft and flight route: %#v", result)
 	}
-	if result.FlightRoute.Airline == nil || result.FlightRoute.Airline.ICAO != "RYR" {
+	if result.FlightRoute.Airline == nil || result.FlightRoute.Airline.ICAO != "CJT" {
 		t.Fatalf("Airline = %#v", result.FlightRoute.Airline)
+	}
+	if result.FlightRoute.Midpoint == nil || result.FlightRoute.Midpoint.IATACode != "YQM" {
+		t.Fatalf("Midpoint = %#v", result.FlightRoute.Midpoint)
 	}
 }
 
@@ -168,18 +182,18 @@ func TestAirline(t *testing.T) {
 	client, err := NewClient(
 		WithBaseURL("https://example.test/v0/"),
 		WithHTTPClient(newTestHTTPClient(func(r *http.Request) *http.Response {
-			if r.URL.Path != "/v0/airline/RYR" {
+			if r.URL.Path != "/v0/airline/CJT" {
 				t.Fatalf("path = %q", r.URL.Path)
 			}
 			return jsonResponse(http.StatusOK, `{
 				"response": [
 					{
-						"name": "Ryanair",
-						"icao": "RYR",
-						"iata": "FR",
-						"country": "Ireland",
-						"country_iso": "IE",
-						"callsign": "RYANAIR"
+						"name": "Cargojet Airways",
+						"icao": "CJT",
+						"iata": "W8",
+						"country": "Canada",
+						"country_iso": "CA",
+						"callsign": "CARGOJET"
 					}
 				]
 			}`)
@@ -189,11 +203,11 @@ func TestAirline(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	airlines, err := client.Airline(context.Background(), "RYR")
+	airlines, err := client.Airline(context.Background(), "CJT")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(airlines) != 1 || airlines[0].ICAO != "RYR" {
+	if len(airlines) != 1 || airlines[0].ICAO != "CJT" {
 		t.Fatalf("airlines = %#v", airlines)
 	}
 }
