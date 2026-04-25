@@ -65,3 +65,11 @@ if errors.Is(err, adsbdb.ErrNotFound) {
 	// unknown aircraft, callsign, airline, or conversion input
 }
 ```
+
+## Development
+
+Refresh recorded API fixtures with:
+
+```sh
+go generate ./...
+```

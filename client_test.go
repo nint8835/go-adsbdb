@@ -1,10 +1,13 @@
 package adsbdb_test
 
+//go:generate go run -tags fixturegen ./internal/fixturegen
+
 import (
 	"context"
 	"errors"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 
@@ -14,170 +17,12 @@ import (
 const (
 	testBaseURL      = "https://example.test/v0/"
 	defaultUserAgent = "go-adsbdb (github.com/nint8835/go-adsbdb)"
-
-	aircraftResponse = `{
-		"response": {
-			"aircraft": {
-				"type": "767-323ERSF",
-				"icao_type": "B763",
-				"manufacturer": "Boeing",
-				"mode_s": "C0816E",
-				"registration": "C-GXAJ",
-				"registered_owner_country_iso_name": "CA",
-				"registered_owner_country_name": "Canada",
-				"registered_owner_operator_flag_code": "CJT",
-				"registered_owner": "Cargojet Airways Ltd",
-				"url_photo": null,
-				"url_photo_thumbnail": null
-			}
-		}
-	}`
-
-	aircraftWithRouteResponse = `{
-		"response": {
-			"aircraft": {
-				"type": "767-323ERSF",
-				"icao_type": "B763",
-				"manufacturer": "Boeing",
-				"mode_s": "C0816E",
-				"registration": "C-GXAJ",
-				"registered_owner_country_iso_name": "CA",
-				"registered_owner_country_name": "Canada",
-				"registered_owner_operator_flag_code": "CJT",
-				"registered_owner": "Cargojet Airways Ltd",
-				"url_photo": null,
-				"url_photo_thumbnail": null
-			},
-			"flightroute": {
-				"callsign": "CJT620",
-				"callsign_icao": "CJT620",
-				"callsign_iata": "W8620",
-				"airline": {
-					"name": "Cargojet Airways",
-					"icao": "CJT",
-					"iata": "W8",
-					"country": "Canada",
-					"country_iso": "CA",
-					"callsign": "CARGOJET"
-				},
-				"origin": {
-					"country_iso_name": "CA",
-					"country_name": "Canada",
-					"elevation": 780,
-					"iata_code": "YHM",
-					"icao_code": "CYHM",
-					"latitude": 43.1735992432,
-					"longitude": -79.9349975586,
-					"municipality": "Hamilton",
-					"name": "John C. Munro Hamilton International Airport"
-				},
-				"midpoint": {
-					"country_iso_name": "CA",
-					"country_name": "Canada",
-					"elevation": 232,
-					"iata_code": "YQM",
-					"icao_code": "CYQM",
-					"latitude": 46.1122016907,
-					"longitude": -64.6785964966,
-					"municipality": "Moncton",
-					"name": "Greater Moncton Romeo LeBlanc International Airport"
-				},
-				"destination": {
-					"country_iso_name": "CA",
-					"country_name": "Canada",
-					"elevation": 461,
-					"iata_code": "YYT",
-					"icao_code": "CYYT",
-					"latitude": 47.618598938,
-					"longitude": -52.7518997192,
-					"municipality": "St. John's",
-					"name": "St. John's International Airport"
-				}
-			}
-		}
-	}`
-
-	callsignResponse = `{
-		"response": {
-			"flightroute": {
-				"callsign": "CJT620",
-				"callsign_icao": "CJT620",
-				"callsign_iata": "W8620",
-				"airline": {
-					"name": "Cargojet Airways",
-					"icao": "CJT",
-					"iata": "W8",
-					"country": "Canada",
-					"country_iso": "CA",
-					"callsign": "CARGOJET"
-				},
-				"origin": {
-					"country_iso_name": "CA",
-					"country_name": "Canada",
-					"elevation": 780,
-					"iata_code": "YHM",
-					"icao_code": "CYHM",
-					"latitude": 43.1735992432,
-					"longitude": -79.9349975586,
-					"municipality": "Hamilton",
-					"name": "John C. Munro Hamilton International Airport"
-				},
-				"destination": {
-					"country_iso_name": "CA",
-					"country_name": "Canada",
-					"elevation": 461,
-					"iata_code": "YYT",
-					"icao_code": "CYYT",
-					"latitude": 47.618598938,
-					"longitude": -52.7518997192,
-					"municipality": "St. John's",
-					"name": "St. John's International Airport"
-				}
-			}
-		}
-	}`
-
-	airlineResponse = `{
-		"response": [{
-			"name": "Cargojet Airways",
-			"icao": "CJT",
-			"iata": "W8",
-			"country": "Canada",
-			"country_iso": "CA",
-			"callsign": "CARGOJET"
-		}]
-	}`
-
-	statsResponse = `{
-		"response": {
-			"daily": {
-				"aircraft": [{"url": "/v0/aircraft/C0816E", "count": 2}],
-				"airline": [],
-				"callsign": [],
-				"mode_s": [],
-				"n_number": [],
-				"online": [],
-				"stats": [],
-				"aggregate": 2
-			},
-			"total": {
-				"aircraft": [],
-				"airline": [],
-				"callsign": [],
-				"mode_s": [],
-				"n_number": [],
-				"online": [],
-				"stats": [{"url": "/v0/stats", "count": 1}],
-				"aggregate": 3
-			}
-		}
-	}`
 )
 
 func TestAircraft(t *testing.T) {
 	client := newClient(t, func(r *http.Request) *http.Response {
 		assertRequest(t, r, "/v0/aircraft/C0816E")
-		return jsonResponse(http.StatusOK, aircraftResponse)
+		return jsonResponse(http.StatusOK, loadFixture(t, "aircraft_c0816e.json"))
 	})
 
 	aircraft, err := client.Aircraft(context.Background(), "C0816E")
@@ -196,7 +41,7 @@ func TestAircraftWithCallsign(t *testing.T) {
 	client := newClient(t, func(r *http.Request) *http.Response {
 		assertRequest(t, r, "/v0/aircraft/C0816E")
 		assertQuery(t, r, "callsign", "CJT620")
-		return jsonResponse(http.StatusOK, aircraftWithRouteResponse)
+		return jsonResponse(http.StatusOK, loadFixture(t, "aircraft_c0816e_callsign_cjt620.json"))
 	})
 
 	result, err := client.AircraftWithCallsign(context.Background(), "C0816E", "CJT620")
@@ -209,13 +54,13 @@ func TestAircraftWithCallsign(t *testing.T) {
 	if result.FlightRoute.Airline == nil || result.FlightRoute.Airline.ICAO != "CJT" {
 		t.Fatalf("Airline = %#v", result.FlightRoute.Airline)
 	}
-	if result.FlightRoute.Midpoint == nil || result.FlightRoute.Midpoint.IATACode != "YQM" {
-		t.Fatalf("Midpoint = %#v", result.FlightRoute.Midpoint)
+	if result.FlightRoute.Destination.IATACode != "YYT" {
+		t.Fatalf("Destination = %#v", result.FlightRoute.Destination)
 	}
 }
 
 func TestCallsign(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/callsign/CJT620", callsignResponse))
+	client := newClient(t, jsonHandler(t, "/v0/callsign/CJT620", loadFixture(t, "callsign_cjt620.json")))
 
 	route, err := client.Callsign(context.Background(), "CJT620")
 	if err != nil {
@@ -227,7 +72,7 @@ func TestCallsign(t *testing.T) {
 }
 
 func TestAirline(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/airline/CJT", airlineResponse))
+	client := newClient(t, jsonHandler(t, "/v0/airline/CJT", loadFixture(t, "airline_cjt.json")))
 
 	airlines, err := client.Airline(context.Background(), "CJT")
 	if err != nil {
@@ -239,19 +84,19 @@ func TestAirline(t *testing.T) {
 }
 
 func TestStats(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/stats", statsResponse))
+	client := newClient(t, jsonHandler(t, "/v0/stats", loadFixture(t, "stats.json")))
 
 	stats, err := client.Stats(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if stats.Daily.Aggregate != 2 || stats.Total.Aggregate != 3 {
+	if stats.Daily.Aggregate == 0 || stats.Total.Aggregate == 0 {
 		t.Fatalf("stats = %#v", stats)
 	}
 }
 
 func TestModeSToNNumber(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/mode-s/A00001", `{"response":"N1"}`))
+	client := newClient(t, jsonHandler(t, "/v0/mode-s/A00001", loadFixture(t, "mode_s_a00001.json")))
 
 	nNumber, err := client.ModeSToNNumber(context.Background(), "A00001")
 	if err != nil {
@@ -263,7 +108,7 @@ func TestModeSToNNumber(t *testing.T) {
 }
 
 func TestNNumberToModeS(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/n-number/N1", `{"response":"A00001"}`))
+	client := newClient(t, jsonHandler(t, "/v0/n-number/N1", loadFixture(t, "n_number_n1.json")))
 
 	modeS, err := client.NNumberToModeS(context.Background(), "N1")
 	if err != nil {
@@ -540,6 +385,16 @@ func assertErrorContains(t testing.TB, err error, want string) {
 	if !strings.Contains(err.Error(), want) {
 		t.Fatalf("err = %q, want substring %q", err, want)
 	}
+}
+
+func loadFixture(t testing.TB, name string) string {
+	t.Helper()
+
+	body, err := os.ReadFile("testdata/" + name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(body)
 }
 
 func newTestHTTPClient(f roundTripFunc) *http.Client {

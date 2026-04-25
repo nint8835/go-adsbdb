@@ -1,0 +1,52 @@
+{
+  "response": {
+    "aircraft": {
+      "icao_type": "B763",
+      "manufacturer": "Boeing",
+      "mode_s": "C0816E",
+      "registered_owner": "Cargojet Airways",
+      "registered_owner_country_iso_name": "CA",
+      "registered_owner_country_name": "Canada",
+      "registered_owner_operator_flag_code": "CJT",
+      "registration": "C-GXAJ",
+      "type": "767 323ERBDSF",
+      "url_photo": "https://airport-data.com/images/aircraft/001/690/001690206.jpg",
+      "url_photo_thumbnail": "https://airport-data.com/images/aircraft/thumbnails/001/690/001690206.jpg"
+    },
+    "flightroute": {
+      "airline": {
+        "callsign": "CARGOJET",
+        "country": "Canada",
+        "country_iso": "CA",
+        "iata": "W8",
+        "icao": "CJT",
+        "name": "Cargojet Airways"
+      },
+      "callsign": "CJT620",
+      "callsign_iata": "W8620",
+      "callsign_icao": "CJT620",
+      "destination": {
+        "country_iso_name": "CA",
+        "country_name": "Canada",
+        "elevation": 461,
+        "iata_code": "YYT",
+        "icao_code": "CYYT",
+        "latitude": 47.618598938,
+        "longitude": -52.7518997192,
+        "municipality": "St. John's",
+        "name": "St. John's International Airport"
+      },
+      "origin": {
+        "country_iso_name": "CA",
+        "country_name": "Canada",
+        "elevation": 232,
+        "iata_code": "YQM",
+        "icao_code": "CYQM",
+        "latitude": 46.112202,
+        "longitude": -64.678596,
+        "municipality": "Moncton",
+        "name": "Greater Moncton Roméo LeBlanc International Airport"
+      }
+    }
+  }
+}

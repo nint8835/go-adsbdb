@@ -1,0 +1,12 @@
+{
+  "response": [
+    {
+      "callsign": "CARGOJET",
+      "country": "Canada",
+      "country_iso": "CA",
+      "iata": "W8",
+      "icao": "CJT",
+      "name": "Cargojet Airways"
+    }
+  ]
+}
