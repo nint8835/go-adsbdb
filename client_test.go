@@ -4,10 +4,12 @@ package adsbdb_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -20,102 +22,139 @@ const (
 )
 
 func TestAircraft(t *testing.T) {
+	body := loadFixture(t, "aircraft_c0816e.json")
+	var want struct {
+		Response struct {
+			Aircraft adsbdb.Aircraft `json:"aircraft"`
+		} `json:"response"`
+	}
+	decodeFixture(t, body, &want)
+
 	client := newClient(t, func(r *http.Request) *http.Response {
 		assertRequest(t, r, "/v0/aircraft/C0816E")
-		return jsonResponse(http.StatusOK, loadFixture(t, "aircraft_c0816e.json"))
+		return jsonResponse(http.StatusOK, body)
 	})
 
 	aircraft, err := client.Aircraft(context.Background(), "C0816E")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if aircraft.Registration != "C-GXAJ" {
-		t.Fatalf("Registration = %q", aircraft.Registration)
-	}
-	if aircraft.RegisteredOwnerOperatorFlagCode == nil || *aircraft.RegisteredOwnerOperatorFlagCode != "CJT" {
-		t.Fatalf("RegisteredOwnerOperatorFlagCode = %v", aircraft.RegisteredOwnerOperatorFlagCode)
+	if !reflect.DeepEqual(aircraft, want.Response.Aircraft) {
+		t.Fatalf("aircraft = %#v, want %#v", aircraft, want.Response.Aircraft)
 	}
 }
 
 func TestAircraftWithCallsign(t *testing.T) {
+	body := loadFixture(t, "aircraft_c0816e_callsign_cjt620.json")
+	var want struct {
+		Response adsbdb.AircraftAndFlightRoute `json:"response"`
+	}
+	decodeFixture(t, body, &want)
+
 	client := newClient(t, func(r *http.Request) *http.Response {
 		assertRequest(t, r, "/v0/aircraft/C0816E")
 		assertQuery(t, r, "callsign", "CJT620")
-		return jsonResponse(http.StatusOK, loadFixture(t, "aircraft_c0816e_callsign_cjt620.json"))
+		return jsonResponse(http.StatusOK, body)
 	})
 
 	result, err := client.AircraftWithCallsign(context.Background(), "C0816E", "CJT620")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Aircraft.ModeS == "" || result.FlightRoute == nil {
-		t.Fatalf("expected aircraft and flight route: %#v", result)
-	}
-	if result.FlightRoute.Airline == nil || result.FlightRoute.Airline.ICAO != "CJT" {
-		t.Fatalf("Airline = %#v", result.FlightRoute.Airline)
-	}
-	if result.FlightRoute.Destination.IATACode != "YYT" {
-		t.Fatalf("Destination = %#v", result.FlightRoute.Destination)
+	if !reflect.DeepEqual(result, want.Response) {
+		t.Fatalf("result = %#v, want %#v", result, want.Response)
 	}
 }
 
 func TestCallsign(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/callsign/CJT620", loadFixture(t, "callsign_cjt620.json")))
+	body := loadFixture(t, "callsign_cjt620.json")
+	var want struct {
+		Response struct {
+			FlightRoute adsbdb.FlightRoute `json:"flightroute"`
+		} `json:"response"`
+	}
+	decodeFixture(t, body, &want)
+
+	client := newClient(t, jsonHandler(t, "/v0/callsign/CJT620", body))
 
 	route, err := client.Callsign(context.Background(), "CJT620")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if route.Callsign != "CJT620" || route.Destination.IATACode != "YYT" {
-		t.Fatalf("route = %#v", route)
+	if !reflect.DeepEqual(route, want.Response.FlightRoute) {
+		t.Fatalf("route = %#v, want %#v", route, want.Response.FlightRoute)
 	}
 }
 
 func TestAirline(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/airline/CJT", loadFixture(t, "airline_cjt.json")))
+	body := loadFixture(t, "airline_cjt.json")
+	var want struct {
+		Response []adsbdb.Airline `json:"response"`
+	}
+	decodeFixture(t, body, &want)
+
+	client := newClient(t, jsonHandler(t, "/v0/airline/CJT", body))
 
 	airlines, err := client.Airline(context.Background(), "CJT")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(airlines) != 1 || airlines[0].ICAO != "CJT" {
-		t.Fatalf("airlines = %#v", airlines)
+	if !reflect.DeepEqual(airlines, want.Response) {
+		t.Fatalf("airlines = %#v, want %#v", airlines, want.Response)
 	}
 }
 
 func TestStats(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/stats", loadFixture(t, "stats.json")))
+	body := loadFixture(t, "stats.json")
+	var want struct {
+		Response adsbdb.Stats `json:"response"`
+	}
+	decodeFixture(t, body, &want)
+
+	client := newClient(t, jsonHandler(t, "/v0/stats", body))
 
 	stats, err := client.Stats(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if stats.Daily.Aggregate == 0 || stats.Total.Aggregate == 0 {
-		t.Fatalf("stats = %#v", stats)
+	if !reflect.DeepEqual(stats, want.Response) {
+		t.Fatalf("stats = %#v, want %#v", stats, want.Response)
 	}
 }
 
 func TestModeSToNNumber(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/mode-s/A00001", loadFixture(t, "mode_s_a00001.json")))
+	body := loadFixture(t, "mode_s_a00001.json")
+	var want struct {
+		Response string `json:"response"`
+	}
+	decodeFixture(t, body, &want)
+
+	client := newClient(t, jsonHandler(t, "/v0/mode-s/A00001", body))
 
 	nNumber, err := client.ModeSToNNumber(context.Background(), "A00001")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if nNumber != "N1" {
-		t.Fatalf("nNumber = %q", nNumber)
+	if nNumber != want.Response {
+		t.Fatalf("nNumber = %q, want %q", nNumber, want.Response)
 	}
 }
 
 func TestNNumberToModeS(t *testing.T) {
-	client := newClient(t, jsonHandler(t, "/v0/n-number/N1", loadFixture(t, "n_number_n1.json")))
+	body := loadFixture(t, "n_number_n1.json")
+	var want struct {
+		Response string `json:"response"`
+	}
+	decodeFixture(t, body, &want)
+
+	client := newClient(t, jsonHandler(t, "/v0/n-number/N1", body))
 
 	modeS, err := client.NNumberToModeS(context.Background(), "N1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if modeS != "A00001" {
-		t.Fatalf("modeS = %q", modeS)
+	if modeS != want.Response {
+		t.Fatalf("modeS = %q, want %q", modeS, want.Response)
 	}
 }
 
@@ -395,6 +434,14 @@ func loadFixture(t testing.TB, name string) string {
 		t.Fatal(err)
 	}
 	return string(body)
+}
+
+func decodeFixture(t testing.TB, body string, v any) {
+	t.Helper()
+
+	if err := json.Unmarshal([]byte(body), v); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func newTestHTTPClient(f roundTripFunc) *http.Client {
